@@ -8,6 +8,12 @@ from ipyleaflet import (
 )
 from localtileserver import TileClient, get_leaflet_tile_layer
 
+from pathlib import Path
+
+BASE = Path(__file__).parent
+
+file = BASE / "ALFL_Alaska_2020.tif"
+
 app_ui = ui.page_fluid(output_widget("map_widget"))  
 
 def server(input, output, session):
@@ -19,7 +25,7 @@ def server(input, output, session):
     @render_widget
     def map_widget():
 
-        client = TileClient("ALFL_Alaska_2020.tif")
+        client = TileClient(file)
 
         center = client.center()
 
