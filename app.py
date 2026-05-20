@@ -84,81 +84,85 @@ app_ui = ui.page_fluid(
 
 def server(input, output, session):
 
-    @reactive.calc
-    def tif_path():
-        return get_data(DOWNLOAD_URL, input.species(), input.region(), input.year())
+    # @reactive.calc
+    # def tif_path():
+    #     return get_data(DOWNLOAD_URL, input.species(), input.region(), input.year())
     
-    @reactive.calc
-    def tile_client():
-        #return TileClient(str(f"{DATA_URL}/{input.species()}_{input.region()}_{input.year()}.tif"))
-        return TileClient(str(tif_path()))
-
-    @render_widget
-    def map_widget():
-
-        # Create tile client
-        client = tile_client()
-
-        # Raster center
-        center = client.center()
-
-        # -------------------------------------------------------------------
-        # Basemaps
-        # -------------------------------------------------------------------
-
-        positron = basemap_to_tiles(basemaps.CartoDB.Positron)
-        positron.base = True
-        positron.name = "Positron"
-
-        osm = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
-        osm.base = True
-        osm.name = "OpenStreetMap"
-
-        esri = basemap_to_tiles(basemaps.Esri.WorldImagery)
-        esri.base = True
-        esri.name = "Satellite"
-
-        # -------------------------------------------------------------------
-        # Raster layers
-        # -------------------------------------------------------------------
-
-        mean_density = get_leaflet_tile_layer(
-            client,
-            indexes=1,
-            colormap="ylgn",
-            name="Mean Density",
-        )
-
-        mean_detection = get_leaflet_tile_layer(
-            client,
-            indexes=3,
-            colormap="ylgn",
-            name="Mean Detection",
-        )
-
-        # -------------------------------------------------------------------
-        # Map
-        # -------------------------------------------------------------------
-
-        m = Map(
-            center=center,
-            zoom=3,
-            layers=[esri, mean_density],
-        )
-
-        # Optional overlay
-        m.add(mean_detection)
-
-        # Controls
-        m.add(LayersControl(position="topright", collapsed=False))
-        m.add(ScaleControl(position="bottomleft"))
-        m.add(FullScreenControl())
-
-        return m
+    # @reactive.calc
+    # def tile_client():
+    #     #return TileClient(str(f"{DATA_URL}/{input.species()}_{input.region()}_{input.year()}.tif"))
+    #     return TileClient(str(tif_path()))
 
     # @render_widget
     # def map_widget():
+
+    #     # Create tile client
+    #     client = tile_client()
+
+    #     # Raster center
+    #     center = client.center()
+
+    #     # -------------------------------------------------------------------
+    #     # Basemaps
+    #     # -------------------------------------------------------------------
+
+    #     positron = basemap_to_tiles(basemaps.CartoDB.Positron)
+    #     positron.base = True
+    #     positron.name = "Positron"
+
+    #     osm = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
+    #     osm.base = True
+    #     osm.name = "OpenStreetMap"
+
+    #     esri = basemap_to_tiles(basemaps.Esri.WorldImagery)
+    #     esri.base = True
+    #     esri.name = "Satellite"
+
+    #     # -------------------------------------------------------------------
+    #     # Raster layers
+    #     # -------------------------------------------------------------------
+
+    #     mean_density = get_leaflet_tile_layer(
+    #         client,
+    #         indexes=1,
+    #         colormap="ylgn",
+    #         name="Mean Density",
+    #     )
+
+    #     mean_detection = get_leaflet_tile_layer(
+    #         client,
+    #         indexes=3,
+    #         colormap="ylgn",
+    #         name="Mean Detection",
+    #     )
+
+    #     # -------------------------------------------------------------------
+    #     # Map
+    #     # -------------------------------------------------------------------
+
+    #     m = Map(
+    #         center=center,
+    #         zoom=3,
+    #         layers=[esri, mean_density],
+    #     )
+
+    #     # Optional overlay
+    #     m.add(mean_detection)
+
+    #     # Controls
+    #     m.add(LayersControl(position="topright", collapsed=False))
+    #     m.add(ScaleControl(position="bottomleft"))
+    #     m.add(FullScreenControl())
+
+    #     return m
+
+    @render_widget
+    def map_widget():
     #     return show(rasterio.open(tif_path()))
+        with rasterio.open("http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif") as dataset:
+        # Read the data for the entire raster (or a specific window)
+            data = dataset.read(1)
+            show(data)
 
 # -------------------------------------------------------------------
 # App
