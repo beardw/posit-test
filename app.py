@@ -14,6 +14,9 @@ from localtileserver import TileClient, get_leaflet_tile_layer
 
 from pathlib import Path
 from io import BytesIO
+import rasterio
+from rasterio.plot import show
+
 
 import requests
 import tempfile
@@ -47,7 +50,7 @@ def get_data(url, code, country, year):
         # return tmp.name
     else:
         print(f"Failed to retrieve data {response.status_code}")
-    return path
+    return path 
 # -------------------------------------------------------------------
 # Paths
 # -------------------------------------------------------------------
@@ -153,6 +156,9 @@ def server(input, output, session):
 
         return m
 
+    # @render_widget
+    # def map_widget():
+    #     return show(rasterio.open(tif_path()))
 
 # -------------------------------------------------------------------
 # App

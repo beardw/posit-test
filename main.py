@@ -17,6 +17,4 @@ def get_data(url, code, country, year):
         print(f"Failed to retrieve data {response.status_code}")
     
 
-
 results = get_data(base_url, "CAWA", "Canada", "1990")
-print(results)
