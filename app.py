@@ -38,13 +38,14 @@ app_ui = ui.page_fluid(
 # Server
 # -------------------------------------------------------------------
 
+client = TileClient(str(tif_file))
+
 def server(input, output, session):
 
     @render_widget
     def map_widget():
 
         # Create tile client
-        client = TileClient(str(tif_file))
 
         # Raster center
         center = client.center()
