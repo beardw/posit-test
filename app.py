@@ -12,7 +12,9 @@ from pathlib import Path
 
 BASE = Path(__file__).parent
 
-file = BASE / "ALFL_Alaska_2020.tif"
+www_dir = Path(__file__).parent / "www"
+
+file = www_dir / "ALFL_Alaska_2020.tif"
 
 app_ui = ui.page_fluid(output_widget("map_widget"))  
 
@@ -75,4 +77,4 @@ def server(input, output, session):
 
         return m
 
-app = App(app_ui, server)
+app = App(app_ui, server, static_assets=www_dir)
