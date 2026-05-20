@@ -1,0 +1,6 @@
+ipyleaflet
+shiny 
+shinywidgets
+ipywidgets
+localtileserver
+matplotlib
