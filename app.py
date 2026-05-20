@@ -165,17 +165,17 @@ def server(input, output, session):
         with rasterio.open(f"{DOWNLOAD_URL}/{input.species()}/{input.region()}/{input.species()}_{input.region()}_{input.year()}.tif") as dataset:
         # with rasterio.open("http://206.12.92.143/data/dashboard/ALFL/Canada/ALFL_Canada_2005.tif") as dataset:
         # Read the data for the entire raster (or a specific window)
-            data = dataset.read(1)
+            # data = dataset.read(1)
             # show(data)
             # fig, ax = plt.subplots()
             # plt.show()
             # return fig
 
                     # Create tile client
-            client = TileClient(dataset) #tile_client()
+            # client = TileClient(dataset) #tile_client()
 
             # Raster center
-            center = client.center()
+            # center = client.center()
 
             # -------------------------------------------------------------------
             # Basemaps
@@ -197,12 +197,12 @@ def server(input, output, session):
             # Raster layers
             # -------------------------------------------------------------------
 
-            mean_density = get_leaflet_tile_layer(
-                client,
-                indexes=1,
-                colormap="ylgn",
-                name="Mean Density",
-            )
+            # mean_density = get_leaflet_tile_layer(
+            #     client,
+            #     indexes=1,
+            #     colormap="ylgn",
+            #     name="Mean Density",
+            # )
 
             # mean_detection = get_leaflet_tile_layer(
             #     client,
@@ -216,9 +216,9 @@ def server(input, output, session):
             # -------------------------------------------------------------------
 
             m = Map(
-                center=center,
+                # center=center,
                 zoom=3,
-                layers=[esri, mean_density],
+                # layers=[esri, mean_density],
             )
 
             # Optional overlay
