@@ -1,80 +1,111 @@
-from shiny import App, Inputs, reactive, ui, render
+from shiny import App, ui
 from shinywidgets import render_widget, output_widget
-from ipywidgets import HTML
+
 from ipyleaflet import (
-    Map, basemaps,
-    basemap_to_tiles, LayersControl, ScaleControl,
-    FullScreenControl, WidgetControl
+    Map,
+    basemaps,
+    basemap_to_tiles,
+    LayersControl,
+    ScaleControl,
+    FullScreenControl,
 )
+
 from localtileserver import TileClient, get_leaflet_tile_layer
 
 from pathlib import Path
 
+
+# -------------------------------------------------------------------
+# Paths
+# -------------------------------------------------------------------
+
 BASE = Path(__file__).parent
+www_dir = BASE / "www"
 
-www_dir = Path(__file__).parent / "www"
+tif_file = www_dir / "ALFL_Alaska_2020.tif"
 
-file = www_dir / "ALFL_Alaska_2020.tif"
 
-app_ui = ui.page_fluid(output_widget("map_widget"))  
+# -------------------------------------------------------------------
+# UI
+# -------------------------------------------------------------------
+
+app_ui = ui.page_fluid(
+    output_widget("map_widget", height="800px")
+)
+
+
+# -------------------------------------------------------------------
+# Server
+# -------------------------------------------------------------------
 
 def server(input, output, session):
-    @render_widget  
-    def map():
-        return Map(center=(50.6252978589571, 0.34580993652344), zoom=3)  
-    
 
     @render_widget
     def map_widget():
 
-        client = TileClient(file)
+        # Create tile client
+        client = TileClient(str(tif_file))
 
+        # Raster center
         center = client.center()
+
+        # -------------------------------------------------------------------
+        # Basemaps
+        # -------------------------------------------------------------------
 
         positron = basemap_to_tiles(basemaps.CartoDB.Positron)
         positron.base = True
-        positron.name = "Positron (minimal)"
-        
+        positron.name = "Positron"
+
         osm = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
         osm.base = True
-        osm.name = "Open Street Map (default)"
-        
-        esri = basemap_to_tiles(basemap=basemaps.Esri.WorldImagery)
+        osm.name = "OpenStreetMap"
+
+        esri = basemap_to_tiles(basemaps.Esri.WorldImagery)
         esri.base = True
-        esri.name = "World Imagery (satellite)"
+        esri.name = "Satellite"
 
-        mean_density = get_leaflet_tile_layer(client, colormap="ylgn", indexes=1, name="Mean Density")
-        mean_detection = get_leaflet_tile_layer(client, colormap="ylgn", indexes=3, name="Mean Detection")
+        # -------------------------------------------------------------------
+        # Raster layers
+        # -------------------------------------------------------------------
 
-        m = Map(layers=[esri, positron, osm],
-                center=center,
+        mean_density = get_leaflet_tile_layer(
+            client,
+            indexes=1,
+            colormap="ylgn",
+            name="Mean Density",
         )
 
-        # band = client.dataset.read(1).astype(float)
-        # rmin = float(np.nanmin(band))
-        # rmax = float(np.nanmax(band))
+        mean_detection = get_leaflet_tile_layer(
+            client,
+            indexes=3,
+            colormap="ylgn",
+            name="Mean Detection",
+        )
 
-        # legend = WidgetControl(
-        #     widget=HTML(f"""
-        #     <div class="map-legend">
-        #         <div class="map-legend-title">
-        #             <b>{rmin:.4f} → {rmax:.4f}</b>
-        #         </div>
-        #         <div class="map-legend-gradient"></div>
-        #     </div>
-        #     """),
-        #     position="bottomright"
-        # )
+        # -------------------------------------------------------------------
+        # Map
+        # -------------------------------------------------------------------
 
-        m.add(mean_density)
+        m = Map(
+            center=center,
+            zoom=5,
+            layers=[esri, mean_density],
+        )
+
+        # Optional overlay
         m.add(mean_detection)
 
-        #m.add(legend)
-
+        # Controls
+        m.add(LayersControl(position="topright", collapsed=False))
+        m.add(ScaleControl(position="bottomleft"))
         m.add(FullScreenControl())
-        m.add(LayersControl(collapsed=False, position='topright'))
-        m.add(ScaleControl(position='bottomleft'))
 
         return m
+
+
+# -------------------------------------------------------------------
+# App
+# -------------------------------------------------------------------
 
 app = App(app_ui, server, static_assets=www_dir)
