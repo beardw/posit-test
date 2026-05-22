@@ -35,11 +35,6 @@ CACHE_DIR = Path(__file__).parent / "tif_cache"
 CACHE_DIR.mkdir(exist_ok=True)
 
 
-gdf = gpd.read_file("boundaries/")
-
-    # 2. Ensure it is in the correct projection (WGS84)
-gdf = gdf.to_crs(epsg=4326)
-
 def tif_path_local(code, country, year):
     return CACHE_DIR / f"{code}_{country}_{year}.tif"
 
@@ -96,101 +91,118 @@ app_ui = ui.page_fluid(
     output_widget("map_widget", height="800px")
 )
 
+
+gdf = gpd.read_file("boundaries")
+gdf = gdf.to_crs(epsg=4326)
+
 def server(input, output, session):
 
-    # @reactive.calc
-    # def tif_path():
-    #     return get_data(DOWNLOAD_URL, input.species(), input.region(), input.year())
-    
-    # @reactive.calc
-    # def tile_client():
-    #     #return TileClient(str(f"{DATA_URL}/{input.species()}_{input.region()}_{input.year()}.tif"))
-    #     return TileClient(str(tif_path()))
 
-    # @render_widget
-    # def map_widget():
-
-    #     # Create tile client
-    #     client = tile_client()
-
-    #     # Raster center
-    #     center = client.center()
-
-    #     # -------------------------------------------------------------------
-    #     # Basemaps
-    #     # -------------------------------------------------------------------
-
-    #     positron = basemap_to_tiles(basemaps.CartoDB.Positron)
-    #     positron.base = True
-    #     positron.name = "Positron"
-
-    #     osm = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
-    #     osm.base = True
-    #     osm.name = "OpenStreetMap"
-
-    #     esri = basemap_to_tiles(basemaps.Esri.WorldImagery)
-    #     esri.base = True
-    #     esri.name = "Satellite"
-
-    #     # -------------------------------------------------------------------
-    #     # Raster layers
-    #     # -------------------------------------------------------------------
-
-    #     mean_density = get_leaflet_tile_layer(
-    #         client,
-    #         indexes=1,
-    #         colormap="ylgn",
-    #         name="Mean Density",
-    #     )
-
-    #     mean_detection = get_leaflet_tile_layer(
-    #         client,
-    #         indexes=3,
-    #         colormap="ylgn",
-    #         name="Mean Detection",
-    #     )
-
-    #     # -------------------------------------------------------------------
-    #     # Map
-    #     # -------------------------------------------------------------------
-
-    #     m = Map(
-    #         center=center,
-    #         zoom=3,
-    #         layers=[esri, mean_density],
-    #     )
-
-    #     # Optional overlay
-    #     m.add(mean_detection)
-
-    #     # Controls
-    #     m.add(LayersControl(position="topright", collapsed=False))
-    #     m.add(ScaleControl(position="bottomleft"))
-    #     m.add(FullScreenControl())
-
-    #     return m
-    countries = gpd.read_file('ne_110m_admin_0_countries')
-    geo_data = GeoData(geo_dataframe = countries,
-                    style={'color': 'black', 'fillColor': '#3366cc', 'opacity':0.05, 'weight':1.9, 'dashArray':'2', 'fillOpacity':0.6},
-                    hover_style={'fillColor': 'red' , 'fillOpacity': 0.2},
-                    name = 'Countries')
-
+    geo_data_layer = GeoData(
+        geo_dataframe=gdf,
+        style={'color': 'blue', 'fillColor': 'cyan', 'opacity': 0.7, 'weight': 2},
+        hover_style={'fillColor': 'red', 'fillOpacity': 0.5},
+        name='My Shapefile Layer'
+    )
 
     @render_widget
     def map_widget():
+    #     return show(rasterio.open(tif_path()))
+        #with rasterio.open("http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif") as dataset:
+        #with rasterio.open(f"{DOWNLOAD_URL}/{input.species()}/{input.region()}/{input.species()}_{input.region()}_{input.year()}.tif") as dataset:
+        # with rasterio.open("http://206.12.92.143/data/dashboard/ALFL/Canada/ALFL_Canada_2005.tif") as dataset:
+        # Read the data for the entire raster (or a specific window)
+            # data = dataset.read(1)
+            # show(data)
+            # fig, ax = plt.subplots()
+            # plt.show()
+            # return fig
+
+                    # Create tile client
+            # client = TileClient(dataset) #tile_client()
+
+            # Raster center
+            # center = client.center()
+
+        positron = basemap_to_tiles(basemaps.CartoDB.Positron)
+        positron.base = True
+        positron.name = "Positron"
+
+        osm = basemap_to_tiles(basemaps.OpenStreetMap.Mapnik)
+        osm.base = True
+        osm.name = "OpenStreetMap"
+
+        esri = basemap_to_tiles(basemaps.Esri.WorldImagery)
+        esri.base = True
+        esri.name = "Satellite"
+
+        # -------------------------------------------------------------------
+        # Raster layers
+        # -------------------------------------------------------------------
+
+        # mean_density = get_leaflet_tile_layer(
+        #     client,
+        #     indexes=1,
+        #     colormap="ylgn",
+        #     name="Mean Density",
+        # )
+
+
+        # mean_detection = get_leaflet_tile_layer(
+        #     client,
+        #     indexes=3,
+        #     colormap="ylgn",
+        #     name="Mean Detection",
+        # )
+
+        # -------------------------------------------------------------------
+        # Map
+        # -------------------------------------------------------------------
+
+
+        m = Map(
+            # center=center,
+            zoom=3,
+            #layers=[esri,],
+        )
+
+        # wms = WMSLayer(url="http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif")
+        # m.add(wms)
+        # m.add(LocalTileLayer(path="http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif"))
+        # # Optional overlay
+        # #m.add(mean_detection)
+
+        # image = ImageOverlay(url=dataset.name)
+        # m.add(image)
+
+        m.add(geo_data_layer)
         
-
-        m = Map(center=(52.3,8.0), zoom = 3, basemap= basemaps.Esri.WorldTopoMap)
-
-
-
-        m.add(geo_data)
-        m.add(LayersControl())
+        # Controls
+        m.add(LayersControl(position="topright", collapsed=False))
+        m.add(ScaleControl(position="bottomleft"))
+        m.add(FullScreenControl())
 
         return m
 
-# -------------------------------------------------------------------
-# App
-# -------------------------------------------------------------------
-
 app = App(app_ui, server)
+
+
+    # countries = gpd.read_file('ne_110m_admin_0_countries')
+    # geo_data = GeoData(geo_dataframe = countries,
+    #                 style={'color': 'black', 'fillColor': '#3366cc', 'opacity':0.05, 'weight':1.9, 'dashArray':'2', 'fillOpacity':0.6},
+    #                 hover_style={'fillColor': 'red' , 'fillOpacity': 0.2},
+    #                 name = 'Countries')
+
+
+    # @render_widget
+    # def map_widget():
+        
+
+    #     m = Map(center=(52.3,8.0), zoom = 3, basemap= basemaps.Esri.WorldTopoMap)
+
+
+
+    #     m.add(geo_data)
+    #     m.add(LayersControl())
+
+    #     return m
