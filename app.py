@@ -1,15 +1,21 @@
 from shiny import App, ui, reactive, render
 from shinywidgets import render_widget, output_widget, render_plotly
 
+import geopandas as gpd
+
 import matplotlib.pyplot as plt
 
 from ipyleaflet import (
     Map,
+    GeoData,
     basemaps,
     basemap_to_tiles,
     LayersControl,
     ScaleControl,
     FullScreenControl,
+    LocalTileLayer,
+    WMSLayer,
+    ImageOverlay
 )
 
 from localtileserver import TileClient, get_leaflet_tile_layer
@@ -158,6 +164,11 @@ def server(input, output, session):
 
     #     return m
 
+    gdf = gpd.read_file("boundaries/Subregions_Mosaics_EPSG3978.shp")
+
+    # 2. Ensure it is in the correct projection (WGS84)
+    gdf = gdf.to_crs(epsg=4326)
+
     @render_widget
     def map_widget():
     #     return show(rasterio.open(tif_path()))
@@ -204,6 +215,7 @@ def server(input, output, session):
             #     name="Mean Density",
             # )
 
+
             # mean_detection = get_leaflet_tile_layer(
             #     client,
             #     indexes=3,
@@ -215,15 +227,32 @@ def server(input, output, session):
             # Map
             # -------------------------------------------------------------------
 
+
             m = Map(
                 # center=center,
                 zoom=3,
-                # layers=[esri, mean_density],
+                #layers=[esri,],
             )
 
-            # Optional overlay
-            #m.add(mean_detection)
+            # wms = WMSLayer(url="http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif")
+            # m.add(wms)
+            # m.add(LocalTileLayer(path="http://206.12.92.143/data/dashboard/ALFL/Alaska/ALFL_Alaska_1990.tif"))
+            # # Optional overlay
+            # #m.add(mean_detection)
 
+            # image = ImageOverlay(url=dataset.name)
+            # m.add(image)
+
+            geo_data_layer = GeoData(
+                geo_dataframe=gdf,
+                style={'color': 'blue', 'fillColor': 'cyan', 'opacity': 0.7, 'weight': 2},
+                hover_style={'fillColor': 'red', 'fillOpacity': 0.5},
+                name='My Shapefile Layer'
+            )
+
+# 5. Add the layer to the map
+            m.add(geo_data_layer)
+            
             # Controls
             m.add(LayersControl(position="topright", collapsed=False))
             m.add(ScaleControl(position="bottomleft"))
